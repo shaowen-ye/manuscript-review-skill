@@ -105,7 +105,7 @@ Please review my manuscript for PNAS submission
 When triggered, the skill will ask you to confirm:
 
 1. **目标期刊 Target journal** — PNAS, Nature, Science, Ecology Letters 等
-2. **审稿深度 Review depth** — 快速（每位审稿人1-2句）或深度（每位审稿人4-6句，默认）Quick or Deep (default)
+2. **审稿深度 Review depth** — 快速（每位审稿人2-3句）或深度（每位审稿人4-6句，默认）Quick (2-3 sentences per agent) or Deep (4-6 sentences, default)
 3. **附加审稿人 Additional agents** — 是否启用 Agent ML
 4. **语言对 Language pair** — 默认英中，可配置 Default English-Chinese, configurable
 5. **输出文件路径 Output file path**
@@ -168,10 +168,13 @@ The scaffold template (`template/scaffold.js`) provides all the docx formatting 
 manuscript-review/
 ├── SKILL.md                    # 主技能定义 Main skill definition (Claude reads this)
 ├── references/
-│   └── agent-profiles.md       # 审稿人详细人设 Detailed agent personas
+│   ├── agent-profiles.md       # 审稿人详细人设 Detailed agent personas
+│   └── docx-js-api.md          # docx API 精简参考 Condensed docx API reference
 ├── template/
 │   └── scaffold.js             # docx 生成模板 docx generation template
 ├── 中文说明.md                  # 中文参考文档 Chinese reference documentation
+├── CHANGELOG.md                # 版本变更记录 Version history
+├── LICENSE                     # MIT 许可证 MIT license
 └── README.md                   # 本文件 This file
 ```
 

@@ -11,12 +11,19 @@
 // ============================================================
 
 const fs = require('fs');
+let docx;
+try {
+  docx = require('docx');
+} catch (e) {
+  console.error('Error: the "docx" package is not installed. Run: npm install docx');
+  process.exit(1);
+}
 const { Document, Packer, Paragraph, TextRun, Header, Footer, ImageRun,
         AlignmentType, HeadingLevel, PageNumber, PageBreak,
-        ShadingType, BorderStyle, Table, TableRow, TableCell, WidthType } = require('docx');
+        ShadingType, BorderStyle, Table, TableRow, TableCell, WidthType } = docx;
 
 // === CONFIGURATION (set per manuscript) ===
-const MEDIA = '/tmp/pnas_media/word/media/';      // <-- adjust per manuscript
+const MEDIA = '';                                     // <-- image directory (e.g. './media/'), or '' if no images
 const OUTPUT_FILE = './bilingual_agents_review.docx'; // <-- adjust per manuscript
 const HEADER_TEXT = 'Manuscript Agent Team Review';   // <-- adjust per manuscript
 
@@ -68,13 +75,22 @@ function separator() {
 // Page break
 function pb() { return new Paragraph({ children: [new PageBreak()] }); }
 
+// Infer docx ImageRun type from file extension (docx supports jpg/png/gif/bmp)
+function imgType(file) {
+  const ext = file.slice(file.lastIndexOf('.') + 1).toLowerCase();
+  if (ext === 'jpg' || ext === 'jpeg') return 'jpg';
+  if (ext === 'gif') return 'gif';
+  if (ext === 'bmp') return 'bmp';
+  return 'png';
+}
+
 // Figure with bilingual caption (reads from MEDIA directory)
 function fig(imgFile, w, h, engCap, chnCap) {
   const items = [];
   try {
     const data = fs.readFileSync(MEDIA + imgFile);
     items.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { before: 120, after: 40 },
-      children: [new ImageRun({ type: "png", data, transformation: { width: w, height: h },
+      children: [new ImageRun({ type: imgType(imgFile), data, transformation: { width: w, height: h },
         altText: { title: engCap, description: engCap, name: imgFile } })] }));
   } catch(e) { items.push(eng("[Image: " + imgFile + " not found]")); }
   items.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { before: 20, after: 20, line: 240 },
@@ -194,11 +210,12 @@ function buildScoreTable(scores) {
 
   const dataRows = [];
   const agentTotals = agents.map(() => ({ sum: 0, count: 0 }));
+  let grandSum = 0, grandCount = 0;
 
   for (const [section, agentScores] of Object.entries(scores)) {
     const vals = agents.map((a, i) => {
       const v = agentScores[a];
-      if (v != null) { agentTotals[i].sum += v; agentTotals[i].count++; }
+      if (v != null) { agentTotals[i].sum += v; agentTotals[i].count++; grandSum += v; grandCount++; }
       return v;
     });
     const validVals = vals.filter(v => v != null);
@@ -210,10 +227,9 @@ function buildScoreTable(scores) {
     ]}));
   }
 
-  // Overall average row
+  // Overall average row (grand average = true mean over ALL scores, not mean of column means)
   const overallVals = agentTotals.map(t => t.count ? (t.sum / t.count).toFixed(1) : "-");
-  const allValid = overallVals.filter(v => v !== "-").map(Number);
-  const grandAvg = allValid.length ? (allValid.reduce((a, b) => a + b, 0) / allValid.length).toFixed(1) : "-";
+  const grandAvg = grandCount ? (grandSum / grandCount).toFixed(1) : "-";
   dataRows.push(new TableRow({ children: [
     makeCell("Overall", true, "000000"),
     ...overallVals.map(v => makeCell(v, true, "000000")),
@@ -309,4 +325,7 @@ const doc = new Document({
 Packer.toBuffer(doc).then(buffer => {
   fs.writeFileSync(OUTPUT_FILE, buffer);
   console.log("Agent Team Review document created: " + OUTPUT_FILE);
-}).catch(err => console.error("Error creating document:", err));
+}).catch(err => {
+  console.error("Error creating document:", err);
+  process.exitCode = 1;  // let callers detect failure via exit code
+});

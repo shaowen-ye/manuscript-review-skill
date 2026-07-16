@@ -1,6 +1,7 @@
 ---
 name: manuscript-review
 description: "Multi-agent academic manuscript review that generates bilingual annotated docx. Use when the user wants to review a manuscript, create a multi-agent review document, generate bilingual annotated review, or improve a paper before journal submission. Also trigger on: '审稿', '多Agent审稿', '文稿审阅', '学术文稿评审', 'agent team review', 'manuscript critique', 'paper review panel', '投稿前审阅', '逐段审稿'."
+license: MIT
 ---
 
 # Multi-Agent Academic Manuscript Review
@@ -62,8 +63,8 @@ Ask the user (via AskUserQuestion) to confirm:
 
 1. **Target journal** — e.g., PNAS, Nature, Science, Ecology Letters, etc. This affects Agent E's review standards (word limits, format requirements, scope fit).
 2. **Review depth**:
-   - **Quick review** — 1-2 sentences per Agent per section, overall scoring only
-   - **Deep review** (default) — 3-5 sentences per Agent per section with specific suggestions + scoring
+   - **Quick review** — 2-3 sentences per Agent per section (at least 1 specific problem + 1 fix), overall scoring only
+   - **Deep review** (default) — 4-6 sentences per Agent per section with specific suggestions + scoring (see "Review Depth Requirements" below)
 3. **Additional Agents** — Whether to add Agent ML or other custom agents
 4. **Language pair** — Default: English-Chinese. Can be changed.
 5. **Output file name and directory**
@@ -74,7 +75,7 @@ Ask the user (via AskUserQuestion) to confirm:
 
 **MANDATORY**: Read the scaffold template at [`template/scaffold.js`](template/scaffold.js) to get all helper functions and document infrastructure. Never recreate these from memory.
 
-Also read the docx API reference: `/Users/YES/.agents/skills/docx/docx-js.md` for correct API usage.
+Also read the docx API reference at [`references/docx-js-api.md`](references/docx-js-api.md) for correct API usage and common pitfalls.
 
 #### Step 2: Build the script
 
@@ -199,7 +200,7 @@ content.push(
 
 3. **Diagnose AND prescribe** — Every critique MUST be paired with a concrete, actionable fix. Bad: "The statistics are questionable." Good: "The permutation test on line X does not account for spatial non-independence; recommend restructuring as a mixed-effects model with watershed as a random effect, or at minimum adding a spatial block bootstrap (see Legendre & Fortin 1989)."
 
-4. **Challenge the logic chain explicitly** — For each section, map out the implicit argument chain (Premise A → Premise B → Conclusion C) and identify where links are weak, missing, or circular. Flag any instance of: correlation \u2192 causation conflation, post-hoc rationalization, unstated assumptions, circular reasoning, or cherry-picking.
+4. **Challenge the logic chain explicitly** — For each section, map out the implicit argument chain (Premise A → Premise B → Conclusion C) and identify where links are weak, missing, or circular. Flag any instance of: correlation → causation conflation, post-hoc rationalization, unstated assumptions, circular reasoning, or cherry-picking.
 
 5. **Score with extreme discipline** — The default assumption is that a section scores 5-6 (adequate but needs significant work). Scores of 8+ should be rare and reserved for genuinely exceptional work. Scores of 9-10 mean "I would not change a single word." NEVER inflate scores to be polite. An average manuscript should score 5-7 overall.
 
